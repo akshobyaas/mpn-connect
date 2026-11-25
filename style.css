@@ -46,6 +46,7 @@
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; } /* keep `hidden` working on elements that set their own display */
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -147,7 +148,7 @@ svg { display: block; }
 }
 .hero-arch path { fill: none; stroke: var(--zari); }
 .hero-arch .arch-outer { stroke-width: 1.2; opacity: .35; }
-.hero-arch .arch-foil { stroke-width: 2; opacity: .7; stroke-dasharray: 1600; stroke-dashoffset: 1600; animation: draw-arch 1.6s .2s ease-out forwards; }
+.hero-arch .arch-foil { stroke-width: 2; opacity: .7; stroke-dasharray: 3200; stroke-dashoffset: 3200; animation: draw-arch 1.6s .2s ease-out forwards; }
 @keyframes draw-arch { to { stroke-dashoffset: 0; } }
 
 .hero-content { position: relative; max-width: 640px; }
@@ -325,6 +326,8 @@ svg { display: block; }
 .footer-brand { display: flex; flex-direction: column; gap: 12px; }
 .footer-brand img { width: 200px; height: auto; }
 .footer-note { font-size: 0.8125rem; max-width: 46ch; }
+.footer-admin { display: block; margin-bottom: 6px; color: var(--ink-2); }
+.footer-admin a { font-weight: 600; }
 
 /* ---------- Dialog ---------- */
 .dialog {
@@ -428,6 +431,14 @@ svg { display: block; }
   #search { height: 60px; font-size: 17px; }
   .directory { padding-top: 36px; scroll-margin-top: calc(var(--header-h) + 12px); }
   .tabs { max-width: 600px; }
+}
+
+/* Below desktop the arch is a corner accent: fade its long sides out before they reach the text */
+@media (max-width: 959px) {
+  .hero-arch {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 32%, transparent 52%);
+            mask-image: linear-gradient(to bottom, #000 0, #000 32%, transparent 52%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

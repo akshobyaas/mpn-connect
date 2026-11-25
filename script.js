@@ -664,6 +664,17 @@ async function copyTemplate() {
 
 function setupAdminContact() {
   const number = normalizePhone(CONFIG.adminWhatsapp);
+
+  // "Contact Admin" links in the menu and footer
+  document.querySelectorAll('[data-action="contact-admin"]').forEach(a => {
+    if (!number) {                       // no admin number configured → hide the links
+      (a.closest('.footer-admin') || a).hidden = true;
+      return;
+    }
+    a.href = `https://wa.me/${number}?text=${encodeURIComponent('Hi, I have a question about RCB Connect.')}`;
+    a.addEventListener('click', closeMenu);
+  });
+
   if (number) {
     const text = "Hi, I'd like to add a listing on RCB Connect.";
     els.adminLink.href = `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
