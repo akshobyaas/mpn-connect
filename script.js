@@ -15,12 +15,19 @@
    1. CONFIG — edit these values
    ---------------------------------------------------------- */
 const CONFIG = {
-  // Where listings are loaded from (relative to index.html).
+  // ★ Google Sheets backend (recommended). Paste your Apps Script Web app URL here.
+  //   With it set: listings come from the Google Sheet (approved rows only),
+  //   and "Add Listing" opens the built-in form, which sends entries to the Sheet.
+  //   See README → "Easy admin with Google Sheets".
+  //   Example: 'https://script.google.com/macros/s/AKfy.../exec'
+  sheetApiUrl: 'https://script.google.com/macros/s/AKfycbw47xXVf7Hu7SCuWFbETd76EeMp8n-5fRSqw-5y_qxKGXASh9aMjy-QyH3eUOsvaFnj/exec',
+
+  // Used when sheetApiUrl is empty, or when the Sheet has no approved listings yet
+  // (this is where the sample/demo listings live).
   listingsUrl: 'listings.json',
 
-  // Google Form (or any form) for new listing submissions.
-  // Leave '' to show the "submissions are handled by admins" dialog instead.
-  // Example: 'https://forms.gle/AbCdEf123'
+  // Only used when sheetApiUrl is empty: an external form (e.g. a Google Form) to open
+  // for "Add Listing". Leave '' to show the "send your details to an admin" dialog.
   addListingFormUrl: '',
 
   // Optional admin WhatsApp number for listing submissions, with country code,
@@ -163,12 +170,29 @@ function normalizeListing(raw) {
   };
 }
 
-async function loadListings() {
-  const res = await fetch(CONFIG.listingsUrl, { cache: 'no-cache' });
+async function fetchListings(url) {
+  const res = await fetch(url, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   const list = Array.isArray(data) ? data : (data.listings || []);
   return list.map(normalizeListing).filter(l => isPublishable(l));
+}
+
+/**
+ * 1. Google Sheet (if configured) — approved listings only.
+ * 2. If the Sheet isn't set up, is unreachable, or has nothing approved yet,
+ *    fall back to listings.json (sample listings), so the page never looks broken.
+ */
+async function loadListings() {
+  if (CONFIG.sheetApiUrl) {
+    try {
+      const fromSheet = await fetchListings(CONFIG.sheetApiUrl);
+      if (fromSheet.length) return fromSheet;
+    } catch (err) {
+      console.warn('Google Sheet unavailable, using listings.json:', err);
+    }
+  }
+  return fetchListings(CONFIG.listingsUrl);
 }
 
 /* ----------------------------------------------------------
@@ -493,19 +517,127 @@ const LISTING_TEMPLATE = [
   'Keep listing for (1 month / 3 months / 6 months): '
 ].join('\n');
 
+function showDialog(d) {
+  if (typeof d.showModal === 'function') d.showModal();
+  else d.setAttribute('open', '');
+}
+function hideDialog(d) {
+  if (typeof d.close === 'function') d.close();
+  else d.removeAttribute('open');
+}
+
 function openAddListing() {
   closeMenu();
-  if (CONFIG.addListingFormUrl) {
+  if (CONFIG.sheetApiUrl) {              // built-in form → Google Sheet
+    resetListingForm();
+    showDialog(els.formDialog);
+    return;
+  }
+  if (CONFIG.addListingFormUrl) {        // external form
     window.open(CONFIG.addListingFormUrl, '_blank', 'noopener');
     return;
   }
-  if (typeof els.dialog.showModal === 'function') els.dialog.showModal();
-  else els.dialog.setAttribute('open', '');
+  showDialog(els.dialog);                // "send details to an admin"
 }
 
-function closeDialog() {
-  if (typeof els.dialog.close === 'function') els.dialog.close();
-  else els.dialog.removeAttribute('open');
+function closeDialog() { hideDialog(els.dialog); }
+
+/* ---- Built-in Add Listing form ---- */
+function setupListingForm() {
+  const sel = $('#f-category');
+  sel.innerHTML = '<option value="" disabled selected>Choose a category</option>' +
+    CONFIG.categories.map(c => `<option>${c.replace(/&/g, '&amp;')}</option>`).join('');
+
+  const wa = $('#f-whatsapp');
+  wa.addEventListener('input', () => { $('#consent-wrap').hidden = !wa.value.trim(); });
+
+  els.form.addEventListener('submit', submitListing);
+  els.form.addEventListener('input', e => e.target.removeAttribute('aria-invalid'));
+}
+
+function resetListingForm() {
+  els.form.reset();
+  els.form.hidden = false;
+  els.formDone.hidden = true;
+  $('#consent-wrap').hidden = true;
+  els.formError.textContent = '';
+  els.form.querySelectorAll('[aria-invalid]').forEach(f => f.removeAttribute('aria-invalid'));
+}
+
+/** Returns an error message, or '' when the form is fine. Marks bad fields. */
+function validateListingForm(data) {
+  const missing = [];
+  [['name', 'your name'], ['title', 'a listing title'], ['description', 'a description'], ['category', 'a category']]
+    .forEach(([key, label]) => {
+      if (!data[key]) {
+        missing.push(label);
+        els.form.elements[key].setAttribute('aria-invalid', 'true');
+      }
+    });
+  if (missing.length) {
+    const list = missing.length > 1
+      ? `${missing.slice(0, -1).join(', ')} and ${missing[missing.length - 1]}`
+      : missing[0];
+    return `Please add ${list}.`;
+  }
+  if (data.whatsapp && !normalizePhone(data.whatsapp)) {
+    els.form.elements.whatsapp.setAttribute('aria-invalid', 'true');
+    return 'That WhatsApp number looks incomplete. Use 10 digits, e.g. 98765 43210.';
+  }
+  if (data.whatsapp && !data.consent) {
+    return 'Tick the box to let members message you, or leave the WhatsApp number empty.';
+  }
+  return '';
+}
+
+async function submitListing(e) {
+  e.preventDefault();
+  const f = els.form.elements;
+  const data = {
+    type: f.type.value,
+    name: f.name.value.trim(),
+    profession: f.profession.value.trim(),
+    title: f.title.value.trim(),
+    description: f.description.value.trim(),
+    category: f.category.value,
+    keywords: f.keywords.value.trim(),
+    whatsapp: f.whatsapp.value.trim(),
+    consent: f.consent.checked,
+    keep: f.keep.value,
+    website: f.website.value          // spam trap
+  };
+  if (data.whatsapp && data.consent) data.whatsapp = normalizePhone(data.whatsapp);
+
+  const problem = validateListingForm(data);
+  els.formError.textContent = problem;
+  if (problem) {
+    const bad = els.form.querySelector('[aria-invalid="true"]');
+    if (bad) bad.focus();
+    return;
+  }
+
+  els.formSubmit.disabled = true;
+  els.formSubmit.textContent = 'Sending…';
+  try {
+    // text/plain keeps this a "simple" request, which Google Apps Script accepts from any site.
+    const res = await fetch(CONFIG.sheetApiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    const out = await res.json();
+    if (!out.ok) throw new Error(out.error || 'Not saved');
+    els.form.hidden = true;
+    els.formDone.hidden = false;
+  } catch (err) {
+    console.error('Listing not sent:', err);
+    els.formError.textContent = (err && err.message && err.message !== 'Failed to fetch' && err.message !== 'Not saved')
+      ? err.message
+      : 'Your listing could not be sent. Check your connection and try again.';
+  } finally {
+    els.formSubmit.disabled = false;
+    els.formSubmit.textContent = 'Send for approval';
+  }
 }
 
 async function copyTemplate() {
@@ -559,7 +691,12 @@ function cacheElements() {
     adminLink: $('#admin-contact-link'),
     adminFallback: $('#admin-contact-fallback'),
     copyStatus: $('#copy-status'),
-    cardTemplate: $('#card-template')
+    cardTemplate: $('#card-template'),
+    formDialog: $('#form-dialog'),
+    form: $('#listing-form'),
+    formDone: $('#form-done'),
+    formError: $('#form-error'),
+    formSubmit: $('#form-submit')
   });
 }
 
@@ -640,6 +777,11 @@ function bindEvents() {
   els.dialog.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDialog));
   els.dialog.addEventListener('click', e => { if (e.target === els.dialog) closeDialog(); }); // backdrop
   $('#copy-template').addEventListener('click', copyTemplate);
+
+  els.formDialog.querySelectorAll('[data-close]').forEach(b =>
+    b.addEventListener('click', () => hideDialog(els.formDialog)));
+  els.formDialog.addEventListener('click', e => { if (e.target === els.formDialog) hideDialog(els.formDialog); });
+  setupListingForm();
 }
 
 async function init() {

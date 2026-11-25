@@ -171,6 +171,79 @@
     </div>
   </dialog>
 
+  <!-- ============ ADD LISTING FORM (used when CONFIG.sheetApiUrl is set) ============ -->
+  <dialog class="dialog" id="form-dialog" aria-labelledby="form-dialog-title">
+    <div class="dialog-body">
+      <button type="button" class="dialog-close" data-close aria-label="Close">&times;</button>
+
+      <form id="listing-form" novalidate>
+        <h2 id="form-dialog-title">Add your listing</h2>
+        <p>An RCB admin checks every listing before it appears on the directory.</p>
+
+        <fieldset class="field type-field">
+          <legend>What kind of listing is this?</legend>
+          <label class="radio-card"><input type="radio" name="type" value="offer" checked />
+            <span><strong>I Can Help</strong><small>Something you offer</small></span></label>
+          <label class="radio-card"><input type="radio" name="type" value="request" />
+            <span><strong>I'm Looking For</strong><small>Something you need</small></span></label>
+        </fieldset>
+
+        <div class="field">
+          <label for="f-name">Full name</label>
+          <input id="f-name" name="name" required maxlength="80" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label for="f-profession">Business or profession <span class="opt">optional</span></label>
+          <input id="f-profession" name="profession" maxlength="80" autocomplete="organization-title" placeholder="e.g. Chartered Accountant" />
+        </div>
+        <div class="field">
+          <label for="f-title">Listing title</label>
+          <input id="f-title" name="title" required maxlength="90" placeholder="e.g. Website development for small businesses" />
+        </div>
+        <div class="field">
+          <label for="f-description">Description</label>
+          <textarea id="f-description" name="description" required maxlength="600" rows="4" placeholder="2–3 sentences about what you offer or need."></textarea>
+        </div>
+        <div class="field">
+          <label for="f-category">Category</label>
+          <select id="f-category" name="category" required></select>
+        </div>
+        <div class="field">
+          <label for="f-keywords">Keywords <span class="opt">optional</span></label>
+          <input id="f-keywords" name="keywords" maxlength="150" placeholder="Words people might search, separated by commas" />
+        </div>
+        <div class="field">
+          <label for="f-whatsapp">WhatsApp number <span class="opt">optional</span></label>
+          <input id="f-whatsapp" name="whatsapp" type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="98765 43210" />
+          <label class="check" id="consent-wrap" hidden>
+            <input type="checkbox" name="consent" id="f-consent" />
+            <span>Members can message me on WhatsApp through the Connect button. My number isn't shown on the site.</span>
+          </label>
+        </div>
+        <div class="field">
+          <label for="f-keep">Keep my listing for</label>
+          <select id="f-keep" name="keep">
+            <option>1 month</option>
+            <option selected>3 months</option>
+            <option>6 months</option>
+          </select>
+        </div>
+
+        <!-- Spam trap: hidden from people, bots fill it in -->
+        <div class="hp" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
+
+        <p class="form-error" id="form-error" role="alert"></p>
+        <button type="submit" class="btn btn-primary btn-block" id="form-submit">Send for approval</button>
+      </form>
+
+      <div class="form-done" id="form-done" hidden>
+        <h2>Listing sent</h2>
+        <p>An RCB admin will review it, usually within a day. It will then appear on the directory.</p>
+        <button type="button" class="btn btn-secondary btn-block" data-close>Done</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Card template (filled in by script.js) -->
   <template id="card-template">
     <article class="card">

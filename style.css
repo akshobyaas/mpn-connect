@@ -350,6 +350,43 @@ svg { display: block; }
 .dialog-fallback { font-size: var(--fs-sm); }
 .copy-status { font-size: var(--fs-sm); color: var(--offer) !important; min-height: 1em; }
 
+/* ---------- Add listing form ---------- */
+#listing-form > p { margin-bottom: 6px; }
+.field { margin-top: 16px; border: 0; padding: 0; min-width: 0; }
+.field > label, .field legend { display: block; font-weight: 600; font-size: 0.9375rem; margin-bottom: 6px; padding: 0; }
+.opt { font-weight: 400; color: var(--muted); font-size: 0.8125rem; }
+.field input:not([type="radio"]):not([type="checkbox"]), .field select, .field textarea {
+  width: 100%; font: inherit; font-size: 16px; color: var(--ink);
+  padding: 11px 12px; background: var(--white);
+  border: 1px solid var(--line-strong); border-radius: var(--r-control);
+}
+.field select { height: 46px; padding-top: 0; padding-bottom: 0; }
+.field textarea { resize: vertical; min-height: 96px; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-soft); }
+.field [aria-invalid="true"] { border-color: #b3261e !important; }
+
+.type-field { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.type-field legend { grid-column: 1 / -1; }
+.radio-card { position: relative; display: block; cursor: pointer; }
+.radio-card input { position: absolute; opacity: 0; }
+.radio-card span {
+  display: flex; flex-direction: column; height: 100%; padding: 10px 12px;
+  border: 1.5px solid var(--line-strong); border-radius: var(--r-control);
+}
+.radio-card small { color: var(--muted); font-size: 0.8125rem; }
+.radio-card input:checked + span { border-color: var(--indigo); background: var(--indigo-soft); }
+.radio-card input:focus-visible + span { outline: 3px solid #7f8fd6; outline-offset: 2px; }
+
+.check { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; font-size: var(--fs-sm); color: var(--ink-2); cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; accent-color: var(--indigo); }
+
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.form-error { min-height: 0; margin-top: 14px !important; color: #b3261e !important; font-size: var(--fs-sm); }
+.form-error:empty { display: none; }
+.btn-block { width: 100%; margin-top: 18px; }
+.btn[disabled] { opacity: .6; cursor: wait; }
+.form-done h2 { padding-right: 44px; }
+
 /* ==========================================================
    Larger screens
    ========================================================== */
