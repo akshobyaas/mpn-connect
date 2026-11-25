@@ -401,7 +401,7 @@ function buildCard(l) {
   return node;
 }
 
-function emptyState(title, text, withReset) {
+function emptyState(title, text, withReset, withAdd) {
   const div = document.createElement('div');
   div.className = 'empty';
   div.innerHTML = '<h3></h3><p></p>';
@@ -413,6 +413,14 @@ function emptyState(title, text, withReset) {
     b.className = 'btn btn-secondary';
     b.textContent = 'Clear search & filters';
     b.addEventListener('click', resetFilters);
+    div.appendChild(b);
+  }
+  if (withAdd) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn btn-primary';
+    b.textContent = 'Add Listing';
+    b.addEventListener('click', openAddListing);
     div.appendChild(b);
   }
   return div;
@@ -441,11 +449,15 @@ function render() {
   if (state.category !== 'all') meta += ` in ${state.category}`;
   els.resultsMeta.textContent = totalInTab ? meta : '';
 
+  // The big "Add Listing" band below is redundant while the empty state shows its own button
+  const band = document.querySelector('.cta-band');
+  if (band) band.hidden = totalInTab === 0;
+
   // Empty states
   if (totalInTab === 0) {
     box.appendChild(state.tab === 'request'
-      ? emptyState('No requests yet', 'No requests yet. Check back soon—new opportunities and requirements will appear here.')
-      : emptyState('No offers yet', 'No offers yet. Check back soon—members will share what they can help with here.'));
+      ? emptyState('No requests yet', 'Check back soon. New opportunities and requirements will appear here. Need something? Add it as a request.', false, true)
+      : emptyState('No offers yet', 'Be one of the first. Add what you can help with so members can find you.', false, true));
     return;
   }
   if (n === 0) {

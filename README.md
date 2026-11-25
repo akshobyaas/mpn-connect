@@ -8,7 +8,7 @@ This is a static website (HTML, CSS and plain JavaScript) that is free to host o
 index.html          page structure
 style.css           styling (brand colours at the top)
 script.js           behaviour; settings are in the CONFIG block at the top
-listings.json       sample listings, shown until the first real listing is approved
+listings.json       backup listings, only used when the Sheet has none (empty by default)
 assets/             MPN logo
 apps-script/Code.gs the Google Sheets backend (pasted into Google Apps Script)
 README.md           this file
@@ -74,9 +74,6 @@ Tips:
 - Changes show on the website within about **1 minute**.
 - Expired listings hide themselves automatically.
 - On your phone, the **Google Sheets app** works fine for approving.
-
-### Sample listings
-The 8 sample listings in `listings.json` show only while the Sheet has no approved listings. When you approve the first real one, they disappear by themselves.
 
 ---
 
