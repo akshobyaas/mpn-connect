@@ -296,7 +296,9 @@ svg { display: block; }
 .card-member { font-weight: 600; font-size: 0.9375rem; }
 .card-profession { font-size: 0.8125rem; color: var(--muted); }
 .card-profession:empty { display: none; }
-.card-contact { margin-left: auto; }
+.card-contact { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.btn-site { background: var(--white); color: var(--ink); border-color: var(--line-strong); min-height: 44px; padding: 0 16px; font-size: 0.9375rem; }
+.btn-site:hover { border-color: var(--ink); }
 .contact-unavailable { font-size: 0.8125rem; color: var(--muted); }
 
 /* Empty / loading */
@@ -431,6 +433,12 @@ svg { display: block; }
   #search { height: 60px; font-size: 17px; }
   .directory { padding-top: 36px; scroll-margin-top: calc(var(--header-h) + 12px); }
   .tabs { max-width: 600px; }
+}
+
+/* Phones: contact buttons get their own full-width row under the member's name */
+@media (max-width: 639px) {
+  .card-contact:has(.btn) { width: 100%; margin-left: 0; flex-wrap: nowrap; }
+  .card-contact .btn { flex: 1 1 0; }
 }
 
 /* Below desktop the arch is a corner accent: fade its long sides out before they reach the text */

@@ -28,6 +28,7 @@ The website shows it (within about a minute)
 - **Admins** only use the Google Sheet. They don't need a GitHub login or any JSON.
 - Only rows marked **Yes** ever reach the website.
 - A WhatsApp number is only saved if the member ticks the consent box, and it's never shown as text on the site.
+- Members can also add a website or social page (optional). Cards then show a **Website** button next to **Connect**. Only normal `http(s)` links are accepted.
 
 ---
 
@@ -53,7 +54,7 @@ sheetApiUrl: 'https://script.google.com/macros/s/AKfy..../exec',
 ```
 Save it and push to GitHub (see "Publishing changes" below). That's it.
 
-> If you change `Code.gs` later: **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy**. The URL stays the same.
+> **When `Code.gs` changes** (for example after the Website field was added): open the Apps Script project, replace all the code with the new `apps-script/Code.gs`, press Ctrl+S, then **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy**. The URL stays the same. The script adds any new Sheet column (like *Website*) by itself on the next submission.
 
 ---
 

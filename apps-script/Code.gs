@@ -18,7 +18,7 @@
 const HEADERS = [
   'Timestamp', 'Full name', 'Business / profession', 'Listing type',
   'Listing title', 'Description', 'Category', 'Keywords / tags',
-  'WhatsApp', 'Consent', 'Keep my listing for', 'Approved'
+  'WhatsApp', 'Consent', 'Website', 'Keep my listing for', 'Approved'
 ];
 const CATEGORIES = [
   'Marketing & Advertising', 'Design & Creative', 'Technology & IT',
@@ -81,6 +81,7 @@ function doPost(e) {
       keywords: clean(d.keywords, 150),
       consent: d.consent === true,
       whatsapp: String(d.whatsapp || '').replace(/[^\d+]/g, '').slice(0, 16),
+      link: cleanUrl_(d.link),
       keep: ['1 month', '3 months', '6 months'].indexOf(d.keep) >= 0 ? d.keep : '3 months'
     };
     if (!row.name || !row.title || !row.description) {
@@ -90,13 +91,24 @@ function doPost(e) {
     const lock = LockService.getScriptLock();
     lock.waitLock(10000);
     try {
-      sheet_().appendRow([
-        new Date(), row.name, row.profession, row.type, row.title, row.description,
-        row.category, row.keywords,
-        row.consent ? row.whatsapp : '',          // number is only stored with consent
-        row.consent && row.whatsapp ? 'Yes' : '',
-        row.keep, ''                               // Approved: empty until an admin picks Yes
-      ]);
+      const sheet = sheet_();
+      ensureColumn_(sheet, 'Website', 'Keep my listing for');
+      const values = {
+        'timestamp': new Date(), 'full name': row.name, 'business': row.profession,
+        'listing type': row.type, 'listing title': row.title, 'description': row.description,
+        'category': row.category, 'keywords': row.keywords,
+        'whatsapp': row.consent ? row.whatsapp : '',          // number is only stored with consent
+        'consent': row.consent && row.whatsapp ? 'Yes' : '',
+        'website': row.link,
+        'keep my listing': row.keep,
+        'approved': ''                                        // empty until an admin picks Yes
+      };
+      const head = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+                        .map(h => String(h).trim().toLowerCase());
+      sheet.appendRow(head.map(h => {
+        const key = Object.keys(values).find(k => h.indexOf(k) === 0);
+        return key ? values[key] : '';
+      }));
     } finally {
       lock.releaseLock();
     }
@@ -129,7 +141,7 @@ function rowsToListings(rows, now) {
     time: col('timestamp'), name: col('full name'), profession: col('business'),
     type: col('listing type'), title: col('listing title'), description: col('description'),
     category: col('category'), keywords: col('keywords'), whatsapp: col('whatsapp'),
-    consent: col('consent'), keep: col('keep my listing'), approved: col('approved')
+    consent: col('consent'), website: col('website'), keep: col('keep my listing'), approved: col('approved')
   };
   const t = (r, k) => (c[k] >= 0 ? String(r[c[k]] == null ? '' : r[c[k]]).trim() : '');
 
@@ -156,6 +168,7 @@ function rowsToListings(rows, now) {
       keywords: t(r, 'keywords').split(',').map(s => s.trim()).filter(Boolean),
       whatsapp: consent ? t(r, 'whatsapp') : '',
       contactConsent: consent,
+      website: cleanUrl_(t(r, 'website')),
       dateCreated: ymd_(created),
       expiryDate: ymd_(expiry),
       status: 'active'
@@ -165,6 +178,30 @@ function rowsToListings(rows, now) {
 }
 
 /* ---------- helpers ---------- */
+/** Accept "mybiz.com", "www.x.in/page" or a full http(s) link; anything else becomes ''. */
+function cleanUrl_(v) {
+  let s = String(v || '').trim().slice(0, 200);
+  if (!s) return '';
+  if (!/^https?:\/\//i.test(s)) {
+    if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return '';          // javascript:, mailto:, etc.
+    s = 'https://' + s.replace(/^\/+/, '');
+  }
+  return /^https?:\/\/[^\s<>"'\/]+\.[a-z]{2,}([\/?#][^\s<>"']*)?$/i.test(s) ? s : '';
+}
+
+/** Older sheets were created without a column; insert it (before `beforeName`) the first time it's needed. */
+function ensureColumn_(sheet, name, beforeName) {
+  const head = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(h => String(h).trim());
+  if (head.indexOf(name) >= 0) return;
+  const at = head.indexOf(beforeName);
+  if (at >= 0) {
+    sheet.insertColumnBefore(at + 1);
+    sheet.getRange(1, at + 1).setValue(name).setFontWeight('bold').setBackground('#e8eaf4');
+  } else {
+    sheet.getRange(1, head.length + 1).setValue(name).setFontWeight('bold');
+  }
+}
+
 function sheet_() {
   const id = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
   if (!id) throw new Error('Run setup() first');

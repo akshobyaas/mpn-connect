@@ -1,5 +1,5 @@
 {
-  "_instructions": "Admins: see README.md > 'Managing listings'. type = offer (I Can Help) or request (I'm Looking For). status = active or inactive. Dates are YYYY-MM-DD. A listing stays visible through its expiryDate. Only fill whatsapp if the member agreed, and set contactConsent to true. Entries with demo: true are DEMO DATA — delete them once real listings are added.",
+  "_instructions": "Admins: see README.md > 'Managing listings'. type = offer (I Can Help) or request (I'm Looking For). status = active or inactive. Dates are YYYY-MM-DD. A listing stays visible through its expiryDate. Only fill whatsapp if the member agreed, and set contactConsent to true. Optional: website (e.g. \"https://example.com\") adds a Website button. Entries with demo: true are DEMO DATA — delete them once real listings are added.",
   "listings": [
     {
       "id": "demo-001",
@@ -9,7 +9,11 @@
       "memberName": "Example Member",
       "profession": "Web Developer",
       "category": "Technology & IT",
-      "keywords": ["Web Development", "Websites", "Digital Solutions"],
+      "keywords": [
+        "Web Development",
+        "Websites",
+        "Digital Solutions"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-11-22",
@@ -25,7 +29,12 @@
       "memberName": "Example Member",
       "profession": "Chartered Accountant",
       "category": "Finance & Accounting",
-      "keywords": ["GST", "Bookkeeping", "Tax", "Compliance"],
+      "keywords": [
+        "GST",
+        "Bookkeeping",
+        "Tax",
+        "Compliance"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-11-18",
@@ -41,7 +50,12 @@
       "memberName": "Example Member",
       "profession": "Graphic Designer",
       "category": "Design & Creative",
-      "keywords": ["Logo", "Branding", "Print Design", "Social Media"],
+      "keywords": [
+        "Logo",
+        "Branding",
+        "Print Design",
+        "Social Media"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-11-10",
@@ -57,7 +71,11 @@
       "memberName": "Example Member",
       "profession": "Business Consultant",
       "category": "Business Consulting",
-      "keywords": ["Mentorship", "Startups", "Strategy"],
+      "keywords": [
+        "Mentorship",
+        "Startups",
+        "Strategy"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-11-05",
@@ -73,7 +91,12 @@
       "memberName": "Example Member",
       "profession": "Photographer",
       "category": "Photography & Media",
-      "keywords": ["Photography", "Product Shoot", "Events", "E-commerce"],
+      "keywords": [
+        "Photography",
+        "Product Shoot",
+        "Events",
+        "E-commerce"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-10-28",
@@ -89,7 +112,11 @@
       "memberName": "Example Member",
       "profession": "Retail Business Owner",
       "category": "Marketing & Advertising",
-      "keywords": ["Marketing", "Retail", "Business Growth"],
+      "keywords": [
+        "Marketing",
+        "Retail",
+        "Business Growth"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-11-23",
@@ -105,7 +132,12 @@
       "memberName": "Example Member",
       "profession": "Training Consultant",
       "category": "Events",
-      "keywords": ["Venue", "Seminar", "Catering", "Mysuru"],
+      "keywords": [
+        "Venue",
+        "Seminar",
+        "Catering",
+        "Mysuru"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-11-15",
@@ -121,7 +153,11 @@
       "memberName": "Example Member",
       "profession": "Manufacturer",
       "category": "Legal & Compliance",
-      "keywords": ["Trademark", "IP", "Legal Advice"],
+      "keywords": [
+        "Trademark",
+        "IP",
+        "Legal Advice"
+      ],
       "whatsapp": "",
       "contactConsent": false,
       "dateCreated": "2026-11-08",

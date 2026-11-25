@@ -93,7 +93,9 @@ const CONTACT_METHODS = {
     return {
       href: `https://wa.me/${number}?text=${encodeURIComponent(text)}`,
       label: 'Connect',
-      className: 'btn btn-connect'
+      ariaLabel: 'Connect on WhatsApp',
+      className: 'btn btn-connect',
+      icon: 'whatsapp'
     };
   },
   none() {
@@ -101,9 +103,45 @@ const CONTACT_METHODS = {
   }
 };
 
-function getContactAction(listing) {
+/** All contact buttons for a listing: the configured contact method, plus the website if given. */
+function getContactActions(listing) {
   const method = CONTACT_METHODS[CONFIG.contactMethod] || CONTACT_METHODS.none;
-  return method(listing);
+  const actions = [];
+  const main = method(listing);
+  if (main) actions.push(main);
+  if (listing.website) {
+    actions.push({
+      href: listing.website,
+      label: 'Website',
+      ariaLabel: 'Visit website',
+      className: 'btn btn-site',
+      icon: 'external'
+    });
+  }
+  return actions;
+}
+
+const ICONS = {
+  whatsapp: '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>',
+  external: '<svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>'
+};
+
+/**
+ * Turn whatever a member typed ("mybiz.com", "www.x.in/page", "https://…") into a safe
+ * http(s) link, or '' if it isn't a usable web address. Blocks javascript: and other schemes.
+ */
+function normalizeUrl(raw) {
+  let s = String(raw || '').trim();
+  if (!s) return '';
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(s)) s = 'https://' + s.replace(/^\/+/, '');
+  try {
+    const u = new URL(s);
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return '';
+    if (!/\.[a-z]{2,}$/i.test(u.hostname)) return '';
+    return u.href;
+  } catch (_) {
+    return '';
+  }
 }
 
 /** Strip everything but digits; add the default country code to bare 10-digit numbers. */
@@ -163,6 +201,7 @@ function normalizeListing(raw) {
     keywords: keywords.map(k => String(k).trim()).filter(Boolean),
     whatsapp: raw.whatsapp || '',
     contactConsent: raw.contactConsent === true,
+    website: normalizeUrl(raw.website),
     dateCreated: raw.dateCreated || '',
     expiryDate: raw.expiryDate || '',
     status: raw.status || 'inactive',
@@ -339,19 +378,21 @@ function buildCard(l) {
   const created = parseDate(l.dateCreated);
   node.querySelector('.card-date').textContent = created ? dateFmt.format(created) : '';
 
+  // Contact buttons: WhatsApp "Connect" (with consent) and/or the member's website
   const slot = node.querySelector('.card-contact');
-  const action = getContactAction(l);
-  if (action) {
+  const actions = getContactActions(l);
+  actions.forEach(action => {
     const a = document.createElement('a');
     a.href = action.href;
     a.className = action.className;
     a.target = '_blank';
-    a.rel = 'noopener';
-    a.setAttribute('aria-label', `${action.label} about ${l.title}`);
-    a.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>';
+    a.rel = 'noopener nofollow';
+    a.setAttribute('aria-label', `${action.ariaLabel} – ${l.title}`);
+    a.innerHTML = ICONS[action.icon] || '';
     a.appendChild(document.createTextNode(action.label));
     slot.appendChild(a);
-  } else {
+  });
+  if (!actions.length) {
     const span = document.createElement('span');
     span.className = 'contact-unavailable';
     span.textContent = l.demo ? 'Sample, no contact' : 'Contact details not available';
@@ -584,6 +625,10 @@ function validateListingForm(data) {
     els.form.elements.whatsapp.setAttribute('aria-invalid', 'true');
     return 'That WhatsApp number looks incomplete. Use 10 digits, e.g. 98765 43210.';
   }
+  if (data.link && !normalizeUrl(data.link)) {
+    els.form.elements.link.setAttribute('aria-invalid', 'true');
+    return "That website link doesn't look right. Try something like yourbusiness.com";
+  }
   if (data.whatsapp && !data.consent) {
     return 'Tick the box to let members message you, or leave the WhatsApp number empty.';
   }
@@ -603,10 +648,12 @@ async function submitListing(e) {
     keywords: f.keywords.value.trim(),
     whatsapp: f.whatsapp.value.trim(),
     consent: f.consent.checked,
+    link: f.link.value.trim(),
     keep: f.keep.value,
-    website: f.website.value          // spam trap
+    website: f.website.value          // spam trap (hidden field; real people leave it empty)
   };
   if (data.whatsapp && data.consent) data.whatsapp = normalizePhone(data.whatsapp);
+  if (data.link) data.link = normalizeUrl(data.link) || data.link;
 
   const problem = validateListingForm(data);
   els.formError.textContent = problem;
