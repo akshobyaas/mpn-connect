@@ -63,6 +63,7 @@ const CONFIG = {
     'Healthcare',
     'Photography & Media',
     'Events',
+    'Food & Beverages',
     'Other'
   ]
 };

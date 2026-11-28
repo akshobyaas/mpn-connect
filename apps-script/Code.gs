@@ -24,7 +24,8 @@ const CATEGORIES = [
   'Marketing & Advertising', 'Design & Creative', 'Technology & IT',
   'Finance & Accounting', 'Legal & Compliance', 'Business Consulting',
   'Manufacturing & Industry', 'Real Estate & Construction',
-  'Education & Training', 'Healthcare', 'Photography & Media', 'Events', 'Other'
+  'Education & Training', 'Healthcare', 'Photography & Media', 'Events',
+  'Food & Beverages', 'Other'
 ];
 const TIMEZONE = 'Asia/Kolkata';
 const CACHE_SECONDS = 60; // approvals show on the website within about a minute
